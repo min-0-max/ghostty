@@ -5462,6 +5462,45 @@ test "get color default vs effective with override" {
     try testing.expectEqual(cur, rgb);
 }
 
+test "get raw color overrides preserves presence and reset" {
+    var t: Terminal = null;
+    try testing.expectEqual(Result.success, new(null, &t, 80, 24));
+    defer free(t);
+
+    const wrapper = t.?;
+    const zt: *ZigTerminal = wrapper.terminal;
+    const same_as_default: color.RGB = .{ .r = 0x12, .g = 0x34, .b = 0x56 };
+    zt.colors.foreground.default = same_as_default;
+    zt.colors.foreground.override = same_as_default;
+    zt.colors.palette.set(7, same_as_default);
+
+    var foreground: color.RGB.C = undefined;
+    try testing.expectEqual(
+        Result.success,
+        get(t, .color_foreground_override, @ptrCast(&foreground)),
+    );
+    try testing.expectEqual(same_as_default.cval(), foreground);
+    var palette: color.PaletteOverridesC = undefined;
+    try testing.expectEqual(
+        Result.success,
+        get(t, .color_palette_overrides, @ptrCast(&palette)),
+    );
+    try testing.expect((palette.mask[0] & (@as(u64, 1) << 7)) != 0);
+    try testing.expectEqual(same_as_default.cval(), palette.colors[7]);
+
+    zt.colors.foreground.reset();
+    zt.colors.palette.reset(7);
+    try testing.expectEqual(
+        Result.no_value,
+        get(t, .color_foreground_override, @ptrCast(&foreground)),
+    );
+    try testing.expectEqual(
+        Result.success,
+        get(t, .color_palette_overrides, @ptrCast(&palette)),
+    );
+    try testing.expectEqual(@as(u64, 0), palette.mask[0] & (@as(u64, 1) << 7));
+}
+
 test "get color default returns no_value when unset" {
     var t: Terminal = null;
     try testing.expectEqual(Result.success, new(
