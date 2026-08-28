@@ -127,10 +127,29 @@ test "parsePaletteEntry" {
 /// C-compatible palette type using the extern RGB struct.
 pub const PaletteC = [256]RGB.C;
 
+/// Current palette values plus the exact indices changed by OSC 4.
+pub const PaletteOverridesC = extern struct {
+    colors: PaletteC,
+    mask: [4]u64,
+};
+
 /// Convert a Palette to a PaletteC.
 pub fn paletteCval(palette: *const Palette) PaletteC {
     var result: PaletteC = undefined;
     paletteCvalSlice(palette[0..], result[0..]);
+    return result;
+}
+
+pub fn paletteOverridesCval(palette: *const DynamicPalette) PaletteOverridesC {
+    var result: PaletteOverridesC = .{
+        .colors = paletteCval(&palette.current),
+        .mask = .{ 0, 0, 0, 0 },
+    };
+    for (0..256) |index| {
+        if (palette.mask.isSet(index)) {
+            result.mask[index >> 6] |= @as(u64, 1) << @intCast(index & 63);
+        }
+    }
     return result;
 }
 

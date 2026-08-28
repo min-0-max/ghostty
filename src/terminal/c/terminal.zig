@@ -1375,6 +1375,10 @@ pub const TerminalData = enum(c_int) {
     mode = 37,
     vt_ground = 38,
     cursor_at_prompt = 39,
+    color_foreground_override = 40,
+    color_background_override = 41,
+    color_cursor_override = 42,
+    color_palette_overrides = 43,
 
     /// Output type expected for querying the data of the given kind.
     pub fn OutType(comptime self: TerminalData) type {
@@ -1407,8 +1411,12 @@ pub const TerminalData = enum(c_int) {
             .color_foreground_default,
             .color_background_default,
             .color_cursor_default,
+            .color_foreground_override,
+            .color_background_override,
+            .color_cursor_override,
             => color.RGB.C,
             .color_palette, .color_palette_default => color.PaletteC,
+            .color_palette_overrides => color.PaletteOverridesC,
             .kitty_image_storage_limit => u64,
             .kitty_image_medium_file,
             .kitty_image_medium_shared_mem,
@@ -1509,6 +1517,10 @@ fn getTyped(
         .color_cursor_default => out.* = (t.colors.cursor.default orelse return .no_value).cval(),
         .color_palette => out.* = color.paletteCval(&t.colors.palette.current),
         .color_palette_default => out.* = color.paletteCval(&t.colors.palette.original),
+        .color_foreground_override => out.* = (t.colors.foreground.override orelse return .no_value).cval(),
+        .color_background_override => out.* = (t.colors.background.override orelse return .no_value).cval(),
+        .color_cursor_override => out.* = (t.colors.cursor.override orelse return .no_value).cval(),
+        .color_palette_overrides => out.* = color.paletteOverridesCval(&t.colors.palette),
         .kitty_image_storage_limit => {
             if (comptime !build_options.kitty_graphics) return .no_value;
             out.* = @intCast(t.screens.active.kitty_images.total_limit);

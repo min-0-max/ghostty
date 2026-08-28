@@ -162,6 +162,19 @@ typedef struct {
 } GhosttyColorPaletteMask;
 
 /**
+ * Current palette colors and the exact entries overridden by OSC 4.
+ *
+ * A mask bit is set when the matching color is a terminal override. An unset
+ * bit means the embedding application's current base palette remains active.
+ *
+ * @ingroup color
+ */
+typedef struct {
+  GhosttyColorRgb colors[256];
+  GhosttyColorPaletteMask mask;
+} GhosttyColorPaletteOverrides;
+
+/**
  * An entry in Ghostty's X11 color name table.
  *
  * @ingroup color

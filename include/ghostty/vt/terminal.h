@@ -12,6 +12,7 @@
 #include <stdint.h>
 #include <ghostty/vt/types.h>
 #include <ghostty/vt/allocator.h>
+#include <ghostty/vt/color.h>
 #include <ghostty/vt/device.h>
 #include <ghostty/vt/modes.h>
 #include <ghostty/vt/size_report.h>
@@ -1627,6 +1628,37 @@ typedef enum GHOSTTY_ENUM_TYPED {
    * Output type: bool *
    */
   GHOSTTY_TERMINAL_DATA_CURSOR_AT_PROMPT = 39,
+
+  /**
+   * The foreground color set explicitly by OSC 10.
+   *
+   * Returns GHOSTTY_NO_VALUE when no override is active.
+   * Output type: GhosttyColorRgb *
+   */
+  GHOSTTY_TERMINAL_DATA_COLOR_FOREGROUND_OVERRIDE = 40,
+
+  /**
+   * The background color set explicitly by OSC 11.
+   *
+   * Returns GHOSTTY_NO_VALUE when no override is active.
+   * Output type: GhosttyColorRgb *
+   */
+  GHOSTTY_TERMINAL_DATA_COLOR_BACKGROUND_OVERRIDE = 41,
+
+  /**
+   * The cursor color set explicitly by OSC 12.
+   *
+   * Returns GHOSTTY_NO_VALUE when no override is active.
+   * Output type: GhosttyColorRgb *
+   */
+  GHOSTTY_TERMINAL_DATA_COLOR_CURSOR_OVERRIDE = 42,
+
+  /**
+   * Current palette values and the exact indices overridden by OSC 4.
+   *
+   * Output type: GhosttyColorPaletteOverrides *
+   */
+  GHOSTTY_TERMINAL_DATA_COLOR_PALETTE_OVERRIDES = 43,
   GHOSTTY_TERMINAL_DATA_MAX_VALUE = GHOSTTY_ENUM_MAX_VALUE,
 } GhosttyTerminalData;
 
