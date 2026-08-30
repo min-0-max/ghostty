@@ -4,12 +4,17 @@ pub fn build(b: *std.Build) !void {
     const optimize = b.standardOptimizeOption(.{});
     const target = b.standardTargetOptions(.{});
     const no_libcxx = b.option(bool, "no_libcxx", "Set SIMDUTF_NO_LIBCXX to avoid libc++ dependency") orelse false;
+    const strip = b.option(bool, "strip", "Strip debug symbols from the static library") orelse switch (optimize) {
+        .Debug, .ReleaseSafe => false,
+        .ReleaseFast, .ReleaseSmall => true,
+    };
 
     const lib = b.addLibrary(.{
         .name = "simdutf",
         .root_module = b.createModule(.{
             .target = target,
             .optimize = optimize,
+            .strip = strip,
             .link_libc = true,
             // We link libcpp even with no_libcxx because simdutf requires
             // libc++ headers at build time. But it doesn't require libc++ at

@@ -3,6 +3,10 @@ const std = @import("std");
 pub fn build(b: *std.Build) !void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
+    const strip = b.option(bool, "strip", "Strip debug symbols from the static library") orelse switch (optimize) {
+        .Debug, .ReleaseSafe => false,
+        .ReleaseFast, .ReleaseSmall => true,
+    };
 
     const upstream_ = b.lazyDependency("highway", .{});
 
@@ -18,6 +22,7 @@ pub fn build(b: *std.Build) !void {
             .root_source_file = b.path("src/detect.zig"),
             .target = target,
             .optimize = optimize,
+            .strip = strip,
             // Our highway package is free of libc at runtime (uses no symbols)
             // but does require libc headers at compile time.
             .link_libc = true,

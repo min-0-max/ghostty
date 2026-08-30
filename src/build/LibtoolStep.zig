@@ -31,6 +31,9 @@ pub fn create(b: *std.Build, opts: Options) *LibtoolStep {
     const self = b.allocator.create(LibtoolStep) catch @panic("OOM");
 
     const run_step = RunStep.create(b, b.fmt("libtool {s}", .{opts.name}));
+    // cctools otherwise records the wall clock and host uid/gid in archive
+    // members and the symbol table, making identical clean roots diverge.
+    run_step.setEnvironmentVariable("ZERO_AR_DATE", "1");
     run_step.addArgs(&.{ "libtool", "-static", "-o" });
     const output = run_step.addOutputFileArg(opts.out_name);
     for (opts.sources, 0..) |source, i| {
@@ -67,6 +70,7 @@ fn normalizeArchive(
         b,
         b.fmt("ranlib {s} #{d}", .{ step_name, index }),
     );
+    run_step.setEnvironmentVariable("ZERO_AR_DATE", "1");
     run_step.addArgs(&.{
         "/bin/sh",
         "-c",

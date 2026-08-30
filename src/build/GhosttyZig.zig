@@ -118,6 +118,10 @@ fn initVt(
         .root_source_file = b.path("src/lib_vt.zig"),
         .target = cfg.target,
         .optimize = cfg.optimize,
+        // Release libghostty-vt archives must not retain checkout-specific DWARF paths.
+        // Config.strip already defaults true for ReleaseFast/ReleaseSmall; propagate it
+        // to this exported module just as the application artifacts do.
+        .strip = cfg.strip,
 
         // SIMD requires libc. Vendored C++ dependencies are built with
         // no-libcxx mode (HWY_NO_LIBCXX / SIMDUTF_NO_LIBCXX) so we

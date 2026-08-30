@@ -45,6 +45,7 @@ pub fn create(
     const run = b.addSystemCommand(&.{"/bin/sh"});
     run.setName("libsystem override");
     run.addFileArg(b.path("src/build/libsystem_override.sh"));
+    run.addArg(b.graph.zig_exe);
     run.addFileArg(input);
     const output = run.addOutputFileArg(out_name);
     return .{ .step = &run.step, .output = output };

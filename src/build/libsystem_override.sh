@@ -22,11 +22,15 @@
 # math, sincos*) while letting every other archive member bind the
 # well-known libc/libm symbols to libSystem at final link.
 #
-# usage: libsystem_override.sh <input.a> <output.a>
+# usage: libsystem_override.sh <zig> <input.a> <output.a>
 set -eu
 
-in="$1"
-out="$2"
+# Make cctools archive headers independent of the build clock and host owner.
+export ZERO_AR_DATE=1
+
+zig="$1"
+in="$2"
+out="$3"
 
 tmp="$(mktemp -d)"
 trap 'rm -rf "$tmp"' EXIT
@@ -119,5 +123,8 @@ sort -u localize.txt >loc.txt
 comm -23 all.txt loc.txt >keep.txt
 xcrun nmedit -s keep.txt compiler_rt.o
 
-xcrun ar r "$out" compiler_rt.o
-xcrun ranlib "$out" 2>/dev/null || true
+# LLVM ar's deterministic mode canonicalizes timestamp, uid/gid and member
+# modes while preserving the build graph's declared member order. It also
+# regenerates the Darwin archive index without wall-clock metadata.
+"$zig" ar rD "$out" compiler_rt.o
+"$zig" ar sD "$out"
